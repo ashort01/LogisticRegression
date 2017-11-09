@@ -3,6 +3,7 @@ import numpy as np
 import scipy
 import soundfile as sf
 import speechpy as sp
+import pyfilterbank as pf
 
 genres = {"blues":0,"classical":1,"country":2,
           "disco":3, "hiphop":4, "jazz":5,
@@ -28,6 +29,11 @@ def ExtractFeatures(data,samplerate,genre,index):
     ceps =sp.mfcc(data,samplerate)
     numberOfCeps = len(ceps)
     x = np.mean(ceps[int(numberOfCeps*1/10):int(numberOfCeps*9/10)],axis=0)
+
+    #run data through filterbank
+    ofb = pf.FractionalOctaveFilterbank(samplerate,4)
+    y, states = ofb.filter(data)
+    L = (10 * np.log10(np.sum(y * y, axis=0)))[:30]
 
 
 
