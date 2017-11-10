@@ -1,10 +1,17 @@
 import pandas as pd
+import csv
+import numpy as np
 from sklearn import linear_model
 from sklearn import metrics
 
 
-train_x = pd.read_csv('examples.csv', sep=',',header=None)
-train_y = pd.read_csv('training.csv', sep=',',header=None)
+train_x = np.genfromtxt('examples.csv', delimiter=',') 
+train_y = np.genfromtxt('classes.csv', delimiter=',') 
+train_y = train_y.flatten()
+
+test_x = np.genfromtxt('test_x.csv', delimiter=',') 
+test_y = np.genfromtxt('test_y.csv', delimiter=',') 
+test_y = test_y.flatten()
 
 
 print("Creating model...")

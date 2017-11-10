@@ -49,14 +49,16 @@ def ExtractFeatures(data,samplerate,genre,index):
     #ofb = sp.FractionalOctaveFilterbank(ssamplerate,4)
     #y, states = ofb.filter(data)
     #L = (10 * np.log10(np.sum(y * y, axis=0)))[:30]
-    train_x.append(fft_features + mfcc)
+    features = np.concatenate((fft_features, mfcc), axis=0)
+    train_x.append(features)
     train_y.append(genre)
 
 def ExtractTestingFeatures(data,samplerate,id):
     fft_features = fftFeatures(data)
     # extract mfcc feature
     mfcc = cepsFeatures(data,samplerate)
-    test_x.append(fft_features+ mfcc)
+    features = np.concatenate((fft_features, mfcc), axis=0)
+    test_x.append(features)
     test_y.append(id)
 
 def fftFeatures(data):
