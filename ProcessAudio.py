@@ -33,7 +33,10 @@ def ProcessData():
     np.savetxt("examples.csv", train_x, delimiter=",")
     np.savetxt("classes.csv", train_y, delimiter=",")
     np.savetxt("testing.csv",test_x, delimiter=",")
-    np.savetxt("testing_ids.csv", test_y, delimiter=",")
+    with open("testing_ids.csv", 'w') as f:
+        ids = ",".join(test_y)
+        f.write(ids)
+        f.close()
 
 
 
@@ -63,7 +66,7 @@ def ExtractTestingFeatures(data,samplerate,id):
 
 def fftFeatures(data):
     #todo: normalize this
-    return abs(scipy.fft(data)[:1000])
+    return np.abs(scipy.fft(data)[:1000])
 
 def cepsFeatures(data, samplerate):
     ceps = sp.mfcc(data, samplerate)
