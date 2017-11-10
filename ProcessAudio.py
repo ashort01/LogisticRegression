@@ -42,7 +42,7 @@ def ExtractFeatures(data,samplerate,genre,index):
     fft_features = fftFeatures(data)
 
     #extract fft feature
-    mfcc = cepsFeatures()
+    mfcc = cepsFeatures(data,samplerate)
 
     #TODO: get thrid feature going
     #run data through filterbank
@@ -55,7 +55,7 @@ def ExtractFeatures(data,samplerate,genre,index):
 def ExtractTestingFeatures(data,samplerate,id):
     fft_features = fftFeatures(data)
     # extract mfcc feature
-    mfcc = cepsFeatures()
+    mfcc = cepsFeatures(data,samplerate)
     test_x.append(fft_features+ mfcc)
     test_y.append(id)
 
