@@ -4,15 +4,16 @@ import numpy as np
 from sklearn import linear_model
 from sklearn import metrics
 
+train_x = pd.read_csv('examples.csv', sep=',',header=None)
+train_y = pd.read_csv('classes.csv', sep=',',header=None)
+train_y = np.asarray(train_y).flatten()
 
-train_x = np.genfromtxt('examples.csv', delimiter=',') 
-train_y = np.genfromtxt('classes.csv', delimiter=',') 
-train_y = train_y.flatten()
+test_x = pd.read_csv('test_x.csv', sep=',',header=None)
+test_y = pd.read_csv('test_y.csv', sep=',',header=None)
+test_y = np.asarray(test_y).flatten()
 
-test_x = np.genfromtxt('test_x.csv', delimiter=',') 
-test_y = np.genfromtxt('test_y.csv', delimiter=',') 
-test_y = test_y.flatten()
-
+print train_x.shape
+print train_y.shape
 
 print("Creating model...")
 mul_lr = linear_model.LogisticRegression(multi_class='multinomial',solver ='newton-cg').fit(train_x, train_y)
