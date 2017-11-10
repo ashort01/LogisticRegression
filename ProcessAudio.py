@@ -33,7 +33,10 @@ def ProcessData():
     np.savetxt("examples.csv", train_x, delimiter=",")
     np.savetxt("classes.csv", train_y, delimiter=",")
     np.savetxt("testing.csv",test_x, delimiter=",")
-    np.savetxt("testing_ids.csv", test_y, delimiter=",")
+    with open("testing_ids.csv", 'w') as f:
+        ids = ",".join(test_y)
+        f.write(ids)
+        f.close()
 
 
 
