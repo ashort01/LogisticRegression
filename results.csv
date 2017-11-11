@@ -4,7 +4,7 @@ validation.02436.au,reggae
 validation.02930.au,classical
 validation.03364.au,country
 validation.03550.au,country
-validation.04625.au,country
+validation.04625.au,blues
 validation.07561.au,hiphop
 validation.07642.au,country
 validation.09065.au,classical
@@ -15,11 +15,11 @@ validation.16676.au,country
 validation.17817.au,disco
 validation.18392.au,reggae
 validation.18794.au,country
-validation.18828.au,reggae
+validation.18828.au,jazz
 validation.19082.au,country
 validation.21589.au,jazz
 validation.23193.au,jazz
-validation.23211.au,hiphop
+validation.23211.au,blues
 validation.23301.au,country
 validation.24620.au,pop
 validation.25407.au,pop
@@ -57,7 +57,7 @@ validation.62461.au,hiphop
 validation.62917.au,pop
 validation.64717.au,reggae
 validation.65355.au,metal
-validation.66836.au,disco
+validation.66836.au,country
 validation.67898.au,pop
 validation.68246.au,rock
 validation.68504.au,blues
@@ -80,7 +80,7 @@ validation.79401.au,reggae
 validation.80325.au,country
 validation.80446.au,jazz
 validation.80480.au,country
-validation.81197.au,disco
+validation.81197.au,reggae
 validation.84038.au,jazz
 validation.86647.au,rock
 validation.87593.au,metal

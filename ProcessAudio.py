@@ -3,6 +3,8 @@ import numpy as np
 import scipy
 import soundfile as sf
 import speechpy as sp
+import scipy.stats as stats
+from scipy import signal
 
 
 genres = {"blues":0,"classical":1,"country":2,
@@ -24,12 +26,15 @@ def ProcessData():
                 data, samplerate = sf.read(dir+"\\"+file)
                 ExtractFeatures(data,samplerate,genres[genre],fileIndex)
                 fileIndex += 1
+        print("finished processing "+genre+"...")
+    print("Finished processing training data")
     dir = os.path.join(os.getcwd(), 'data\\validation\\')
     for file in os.listdir(dir):
         if file.endswith(".au"):
             data, samplerate = sf.read(dir + "\\" + file)
             fileid = file.split(".")[1]
             ExtractTestingFeatures(data, samplerate, fileid)
+    print("Finished processing testing data")
     np.savetxt("examples.csv", train_x, delimiter=",")
     with open("classes.csv", 'w') as c:
         i=0
@@ -50,44 +55,80 @@ def ProcessData():
 
 
 def ExtractFeatures(data,samplerate,genre,index):
+    fourier = scipy.fft(data)
     #extract first 1000 fft featues
-    fft_features = fftFeatures(data)
-
+    fft_features = np.abs(fourier[:1000])
     #extract fft feature
     mfcc = cepsFeatures(data,samplerate)
-
-    #TODO: get thrid feature going
-    #run data through filterbank
-    #ofb = sp.FractionalOctaveFilterbank(ssamplerate,4)
-    #y, states = ofb.filter(data)
-    #L = (10 * np.log10(np.sum(y * y, axis=0)))[:30]
-
-
-    features = np.concatenate((fft_features, mfcc), axis=0)
+    #extract entropy features
+    # extract bpm features
+    bpm = bpmFeatures(data)
+    features = np.concatenate((fft_features, mfcc, bpm), axis=0)
     train_x.append(features)
     #save the genre for later
     train_y.append(genre)
 
 def ExtractTestingFeatures(data,samplerate,id):
+    fourier = scipy.fft(data)
     #extract the fft feature
-    fft_features = fftFeatures(data)
+    fft_features = np.abs(fourier[:1000])
     # extract mfcc feature
     mfcc = cepsFeatures(data,samplerate)
-    features = np.concatenate((fft_features, mfcc), axis=0)
+    #extract entropy Features
+    #extract bpm features
+    bpm = bpmFeatures(data)
+    features = np.concatenate((fft_features, mfcc, bpm), axis=0)
     #append the features to a 2d array
     test_x.append(features)
     #append the id to an array for later
     test_y.append(id)
-
-def fftFeatures(data):
-    #returns the fft features of the data
-    return np.abs(scipy.fft(data)[:1000])
 
 def cepsFeatures(data, samplerate):
     #returns the mfcc features of the data
     ceps = sp.mfcc(data, samplerate)
     numberOfCeps = len(ceps)
     return np.mean(ceps[int(numberOfCeps * 1 / 10):int(numberOfCeps * 9 / 10)], axis=0)
+
+def bpmFeatures(data):
+    data = np.abs(data)
+    high_en = np.mean(data)
+    peaks = []
+    for i in range(0, len(data)):
+        if data[i] > high_en:
+            peaks.append(i)
+    differences = []
+    for i in range(0, len(peaks)-1):
+        diff = np.abs(peaks[i] - peaks[i+1])
+        differences.append(diff)
+    features = []
+    features.append(np.mean(differences))
+    return features
+
+def entropyFeatures(fourier):
+    #chunk into 50 different arrays of appx 13,236 each
+    i = 0
+    arrayindex = 0
+    chunks = [] * 1000
+    for i in range(0, len(fourier), 6168):
+        list = fourier[i:i+6168]
+        chunks.append(list)
+    entropies = [] * 1000
+    for i in range(0, len(chunks)):
+        p = (1 / len(chunks[i])) * (np.power(np.abs(chunks[i]), 2))
+        p = p / np.sum(p)
+        entropy = stats.entropy(p)
+        entropies.append(entropy)
+
+    features = [] * 4
+    sd_entropies = np.std(entropies)
+    mean_entropies = np.mean(entropies)
+    max_entropy = np.max(entropies)
+    min_entropy = np.min(entropies)
+    features.append(sd_entropies)
+    features.append(mean_entropies)
+    features.append(min_entropy)
+    features.append(max_entropy)
+    return features
 
 print("Processing data...")
 ProcessData()
