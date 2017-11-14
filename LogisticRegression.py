@@ -11,25 +11,28 @@ from sklearn.metrics import confusion_matrix
 
 genres = ["blues","classical","country","disco","hiphop","jazz","metal","pop","reggae","rock"]	 
 
+#read in data from the csv's
 train_x = pd.read_csv('examples.csv', sep=',',header=None)
 train_y = pd.read_csv('classes.csv', sep=',',header=None)
 train_y = np.asarray(train_y).flatten()
 
 test_x = pd.read_csv('testing.csv', sep=',',header=None)
 
-# this normalization got us 64%
+#normalize
+# this normalization was the best
 train_x, norms = skp.normalize(train_x, norm='max', axis=0, copy=True, return_norm=True)
 test_x = test_x / norms
 
 print("Creating model...")
+#create the lr model
 mul_lr = linear_model.LogisticRegression(multi_class='multinomial',solver ='newton-cg').fit(train_x, train_y)
-#print("Multinomial Logistic regression Train Accuracy :: ", metrics.accuracy_score(train_y, mul_lr.predict(train_x)))
 
+#predict testing data for kaggle
 predictions = mul_lr.predict(test_x)
 testing_ids = np.genfromtxt('testing_ids.csv', dtype=object, delimiter=',')
 
 
-#do output for kaggle on testing data
+#do output csv for kaggle on testing data
 results = []
 i = 0
 with open("results.csv", 'w') as f:
@@ -46,7 +49,7 @@ f.close()
 
 def plot_confusion_matrix(cm, classes,
                           normalize=True,
-                          title='Confusion matrix',
+                          title='Logistic Regression',
                           cmap=plt.cm.Blues):
     """
     This function prints and plots the confusion matrix.
@@ -55,9 +58,6 @@ def plot_confusion_matrix(cm, classes,
     #Found on scikit-learn.org
     if normalize:
         cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-        print("Normalized confusion matrix")
-    else:
-        print('Confusion matrix, without normalization')
 
     plt.imshow(cm, interpolation='nearest', cmap=cmap)
     plt.title(title)
@@ -72,7 +72,6 @@ def plot_confusion_matrix(cm, classes,
         plt.text(j, i, format(cm[i, j], fmt),
                  horizontalalignment="center",
                  color="white" if cm[i, j] > thresh else "black")
-
     plt.tight_layout()
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
@@ -85,9 +84,8 @@ y_pred = cross_val_predict(mul_lr,train_x,train_y,cv=cv)
 
 #Get the accuracy scores for the cross val prediction
 scores = cross_val_score(mul_lr, train_x, train_y, cv=cv)
-
+#get the mean for overall accuracy
 accuracy = scores.mean()
-print(scores)
 print("Overall Accuracy:" +str(accuracy))
 
 

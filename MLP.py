@@ -7,6 +7,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import KFold
 import sklearn.preprocessing as skp
 from sklearn import svm, datasets
+from sklearn.model_selection import cross_val_score
 import matplotlib.pyplot as plt
 from sklearn.model_selection import cross_val_predict
 from sklearn.metrics import confusion_matrix
@@ -25,7 +26,7 @@ test_x = pd.read_csv('testing.csv', sep=',',header=None)
 train_x, norms = skp.normalize(train_x, norm='max', axis=0, copy=True, return_norm=True)
 test_x = test_x / norms
 
-mlp = MLPClassifier(hidden_layer_sizes=(1053,1053))
+mlp = MLPClassifier(hidden_layer_sizes=(700,700))
 
 mlp.fit(train_x,train_y)
 
@@ -49,7 +50,7 @@ f.close()
 
 def plot_confusion_matrix(cm, classes,
                           normalize=True,
-                          title='Confusion matrix',
+                          title='Multi-Layer Perceptron',
                           cmap=plt.cm.Blues):
     """
     This function prints and plots the confusion matrix.
@@ -80,13 +81,21 @@ def plot_confusion_matrix(cm, classes,
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
 
+#Create a shuffled kfold
+cv = KFold(n_splits=10, shuffle=True)
+
 #predict across 10 fold validations
-#y_pred = cross_val_predict(mlp,train_x,train_y,cv=10)
+y_pred = cross_val_predict(mlp,train_x,train_y,cv=cv)
+
+#Get the accuracy scores for the cross val prediction
+scores = cross_val_score(mlp, train_x, train_y, cv=cv)
+accuracy = scores.mean()
+print("Overall Accuracy:" +str(accuracy))
 
 #get the confusion matrix
-#conf_mat = confusion_matrix(train_y,y_pred)
+conf_mat = confusion_matrix(train_y,y_pred)
 
 #Plot the confusion matrix
-#plt.figure()
-#plot_confusion_matrix(conf_mat,genres)
-#plt.show()
+plt.figure()
+plot_confusion_matrix(conf_mat,genres)
+plt.show()

@@ -4,9 +4,8 @@ import scipy
 import soundfile as sf
 import speechpy as sp
 import scipy.stats as stats
-from scipy import signal
 
-
+#Dictionary of genres
 genres = {"blues":0,"classical":1,"country":2,
           "disco":3, "hiphop":4, "jazz":5,
           "metal":6,"pop":7, "reggae":8,
@@ -18,23 +17,32 @@ test_x = []
 test_y = []
 		  
 def ProcessData():
+    #loop through the genres
     for genre in genres.keys():
+        #enter the specific genre folder
         dir = os.path.join(os.getcwd(), 'data\\genres\\'+genre)
         fileIndex = 0
+        #loop through all of the files in the folder
         for file in os.listdir(dir):
             if file.endswith(".au"):
+                #read audio file
                 data, samplerate = sf.read(dir+"\\"+file)
+                #extract features from audio file, populates arrays
                 ExtractFeatures(data,samplerate,genres[genre],fileIndex)
                 fileIndex += 1
         print("finished processing "+genre+"...")
     print("Finished processing training data")
+    #testing data directory
     dir = os.path.join(os.getcwd(), 'data\\validation\\')
     for file in os.listdir(dir):
         if file.endswith(".au"):
+            #reads the file
             data, samplerate = sf.read(dir + "\\" + file)
             fileid = file.split(".")[1]
+            #extracts testing data from the files
             ExtractTestingFeatures(data, samplerate, fileid)
     print("Finished processing testing data")
+    #write the features to csv files
     np.savetxt("examples.csv", train_x, delimiter=",")
     with open("classes.csv", 'w') as c:
         i=0
@@ -45,7 +53,7 @@ def ProcessData():
                 c.write(",")
     c.close()
 
-
+    #write the validation features to csv files
     np.savetxt("testing.csv",test_x, delimiter=",")
     with open("testing_ids.csv", 'w') as f:
         ids = ",".join(test_y)
@@ -60,7 +68,6 @@ def ExtractFeatures(data,samplerate,genre,index):
     fft_features = np.abs(fourier[:1000])
     #extract fft feature
     mfcc = cepsFeatures(data,samplerate)
-    #extract entropy features
     # extract bpm features
     bpm = bpmFeatures(data)
     features = np.concatenate((fft_features, mfcc, bpm), axis=0)
@@ -74,7 +81,6 @@ def ExtractTestingFeatures(data,samplerate,id):
     fft_features = np.abs(fourier[:1000])
     # extract mfcc feature
     mfcc = cepsFeatures(data,samplerate)
-    #extract entropy Features
     #extract bpm features
     bpm = bpmFeatures(data)
     features = np.concatenate((fft_features, mfcc, bpm), axis=0)
@@ -88,13 +94,6 @@ def cepsFeatures(data, samplerate):
     ceps = sp.mfcc(data, samplerate)
     numberOfCeps = len(ceps)
     return np.mean(ceps[int(numberOfCeps * 1 / 10):int(numberOfCeps * 9 / 10)], axis=0)
-
-def filterBankFeatures(data,samplerate):
-    cube = sp.lmfe(data, sampling_frequency=samplerate, frame_length=0.020, frame_stride=0.01,
-                              num_filters=40, fft_length=512, low_frequency=0, high_frequency=None)
-    #cube = sp.extract_derivative_feature(logenergy)
-    features = np.mean(cube[int(len(cube) * 1 / 10):int(len(cube) * 9 / 10)], axis=0)
-    return features
 
 def bpmFeatures(data):
     #Our third and custom feature attempts to extract tempo
@@ -118,16 +117,22 @@ def bpmFeatures(data):
     return features
 
 def entropyFeatures(fourier):
+    '''
+    While this feature showed us some promise, it ended up not being used.
+    It performed better on kfold testing, but not on kaggle testing.
+    :param fourier:
+    :return:
+    '''
     #chunk into 50 different arrays of appx 13,236 each
     i = 0
     arrayindex = 0
-    chunks = [] * 1000
-    for i in range(0, len(fourier), 6168):
+    chunks = [] * 2000
+    for i in range(0, len(fourier), 3084):
         list = fourier[i:i+6168]
         chunks.append(list)
     entropies = [] * 1000
     for i in range(0, len(chunks)):
-        p = (1 / len(chunks[i])) * (np.power(np.abs(chunks[i]), 2))
+        p = (1 / len(chunks[i])) * (np.power((np.abs(chunks[i])), 2))
         p = p / np.sum(p)
         entropy = stats.entropy(p)
         entropies.append(entropy)
@@ -137,11 +142,14 @@ def entropyFeatures(fourier):
     mean_entropies = np.mean(entropies)
     max_entropy = np.max(entropies)
     min_entropy = np.min(entropies)
+    max_difference_subsequent = np.max([x - entropies[i - 1] for i, x in enumerate(entropies)][1:])
     features.append(sd_entropies)
-    features.append(mean_entropies)
-    features.append(min_entropy)
-    features.append(max_entropy)
+    #features.append(mean_entropies)
+    #features.append(min_entropy)
+    #features.append(max_entropy)
+    features.append(max_difference_subsequent)
     return features
+
 
 print("Processing data...")
 ProcessData()
