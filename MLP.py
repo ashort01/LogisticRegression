@@ -21,11 +21,11 @@ train_y = np.asarray(train_y).flatten()
 
 test_x = pd.read_csv('testing.csv', sep=',',header=None)
 
-# this normalization got us 64%
+# this normalization performed the best
 train_x, norms = skp.normalize(train_x, norm='max', axis=0, copy=True, return_norm=True)
 test_x = test_x / norms
 
-mlp = MLPClassifier(hidden_layer_sizes=(1013,1013),max_iter=2000,solver="sgd")
+mlp = MLPClassifier(hidden_layer_sizes=(1053,1053))
 
 mlp.fit(train_x,train_y)
 

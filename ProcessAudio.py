@@ -89,18 +89,31 @@ def cepsFeatures(data, samplerate):
     numberOfCeps = len(ceps)
     return np.mean(ceps[int(numberOfCeps * 1 / 10):int(numberOfCeps * 9 / 10)], axis=0)
 
+def filterBankFeatures(data,samplerate):
+    cube = sp.lmfe(data, sampling_frequency=samplerate, frame_length=0.020, frame_stride=0.01,
+                              num_filters=40, fft_length=512, low_frequency=0, high_frequency=None)
+    #cube = sp.extract_derivative_feature(logenergy)
+    features = np.mean(cube[int(len(cube) * 1 / 10):int(len(cube) * 9 / 10)], axis=0)
+    return features
+
 def bpmFeatures(data):
+    #Our third and custom feature attempts to extract tempo
+    #This is a naive attempt at extracting tempo data from the song
     data = np.abs(data)
+    #get the mean
     high_en = np.mean(data)
     peaks = []
     for i in range(0, len(data)):
         if data[i] > high_en:
+            #take all the points above the mean
             peaks.append(i)
     differences = []
     for i in range(0, len(peaks)-1):
+        #take the distance between peaks
         diff = np.abs(peaks[i] - peaks[i+1])
         differences.append(diff)
     features = []
+    #take the mean of the distance between peaks
     features.append(np.mean(differences))
     return features
 

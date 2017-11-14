@@ -1,15 +1,12 @@
 import pandas as pd
-import csv
 import itertools
 import numpy as np
 from sklearn import linear_model
-from sklearn import metrics
-from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import KFold
 import sklearn.preprocessing as skp
-from sklearn import svm, datasets
 import matplotlib.pyplot as plt
 from sklearn.model_selection import cross_val_predict
+from sklearn.model_selection import cross_val_score
 from sklearn.metrics import confusion_matrix
 
 genres = ["blues","classical","country","disco","hiphop","jazz","metal","pop","reggae","rock"]	 
@@ -19,34 +16,10 @@ train_y = pd.read_csv('classes.csv', sep=',',header=None)
 train_y = np.asarray(train_y).flatten()
 
 test_x = pd.read_csv('testing.csv', sep=',',header=None)
-#test_y = pd.read_csv('test_y.csv', sep=',',header=None)
-#test_y = np.asarray(test_y).flatten()
-
-
-# this normalization got us 47%
-#scaler= StandardScaler()
-#train_x = scaler.fit_transform(train_x)
-#test_x = scaler.transform(test_x)
 
 # this normalization got us 64%
 train_x, norms = skp.normalize(train_x, norm='max', axis=0, copy=True, return_norm=True)
 test_x = test_x / norms
-
-# this normalization got us 48%
-#scaler = StandardScaler().fit(train_x)
-#train_x = scaler.transform(train_x)
-#test_x = scaler.transform(test_x)
-
-# this normalization got us 57%
-#min_max_scaler = skp.MinMaxScaler()
-#train_x = min_max_scaler.fit_transform(train_x)
-#test_x = min_max_scaler.transform(test_x)
-
-#normalizer = skp.Normalizer().fit(train_x)
-#train_x = skp.scale(train_x)
-#test_x = skp.scale(test_x)
-
-
 
 print("Creating model...")
 mul_lr = linear_model.LogisticRegression(multi_class='multinomial',solver ='newton-cg').fit(train_x, train_y)
@@ -104,11 +77,23 @@ def plot_confusion_matrix(cm, classes,
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
 
+#Create a shuffled kfold
+cv = KFold(n_splits=10, shuffle=True)
+
 #predict across 10 fold validations
-y_pred = cross_val_predict(mul_lr,train_x,train_y,cv=10)
+y_pred = cross_val_predict(mul_lr,train_x,train_y,cv=cv)
+
+#Get the accuracy scores for the cross val prediction
+scores = cross_val_score(mul_lr, train_x, train_y, cv=cv)
+
+accuracy = scores.mean()
+print(scores)
+print("Overall Accuracy:" +str(accuracy))
+
 
 #get the confusion matrix
 conf_mat = confusion_matrix(train_y,y_pred)
+
 
 #Plot the confusion matrix
 plt.figure()
