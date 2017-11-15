@@ -16,6 +16,7 @@ from sklearn.neural_network import MLPClassifier
 
 genres = ["blues","classical","country","disco","hiphop","jazz","metal","pop","reggae","rock"]	 
 
+#load training data
 train_x = pd.read_csv('examples.csv', sep=',',header=None)
 train_y = pd.read_csv('classes.csv', sep=',',header=None)
 train_y = np.asarray(train_y).flatten()
@@ -26,10 +27,13 @@ test_x = pd.read_csv('testing.csv', sep=',',header=None)
 train_x, norms = skp.normalize(train_x, norm='max', axis=0, copy=True, return_norm=True)
 test_x = test_x / norms
 
+# create model
 mlp = MLPClassifier(hidden_layer_sizes=(700,700))
 
+# train
 mlp.fit(train_x,train_y)
 
+#predict
 predictions = mlp.predict(test_x)
 testing_ids = np.genfromtxt('testing_ids.csv', dtype=object, delimiter=',')
 
